@@ -1,0 +1,41 @@
+version: "3.9"
+
+services:
+  api:
+    build:
+      context: services/laravel
+    environment: 
+      APP_ENV: local
+      APP_URL: http://localhost
+      APP_DB_DRIVER: pgsql
+      APP_DB_HOST: db
+      APP_DB_PORT: 5432
+      APP_DB_NAME: laravel
+      APP_DB_USER: laravel
+      APP_DB_PASSWORD: pg-secret-password-1
+      APP_IS_DEBUG: 'true'
+    depends_on: 
+      - db
+    ports:
+      - 8081:8000
+  db:
+    image: postgres:13.0-alpine
+    restart: always
+    ports:
+      - 5432:5432
+    volumes:
+    - ./services/db/init/:/docker-entrypoint-initdb.d/
+    environment:
+      APP_DB_NAME: laravel
+      APP_DB_USER: laravel
+      APP_USER_PASSWORD: pg-secret-password-1
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+  web:
+    build:
+      context: services/web
+      target: 'production-stage'
+    volumes:
+      - './services/web:/app'
+    ports:
+      - 8080:80
